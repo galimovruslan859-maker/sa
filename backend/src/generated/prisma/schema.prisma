@@ -1,0 +1,409 @@
+// ---------------------------------------------------------------------------
+// RESELL — схема базы данных (PostgreSQL + Prisma ORM)
+//
+// Все денежные поля хранятся в КОПЕЙКАХ (Int), чтобы избежать ошибок
+// округления чисел с плавающей точкой в финансовой аналитике.
+// 4490.00 ₽  ->  449000
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client" // driver adapter (PGlite / pg), не требует внешних бинарников
+  output     = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================== ПЕРЕЧИСЛЕНИЯ ==============================
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  pending
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum DeliveryMethod {
+  pickup
+  courier
+  post
+}
+
+enum DiscountType {
+  percent
+  fixed
+}
+
+enum ExpenseCategory {
+  advertising
+  logistics
+  packaging
+  payment_fee
+  rent
+  salary
+  other
+}
+
+enum PurchaseStatus {
+  draft
+  ordered
+  in_transit
+  received
+  cancelled
+}
+
+// ================================= ПОЛЬЗОВАТЕЛИ ===========================
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  phone        String?
+  passwordHash String   @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String?  @map("last_name")
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @updatedAt @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cartItems   CartItem[]
+  orders      Order[]
+  favorites   Favorite[]
+  reviews     Review[]
+  promoUsages PromoUsage[]
+
+  @@index([role])
+  @@map("users")
+}
+
+// ================================== КАТАЛОГ ===============================
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Supplier {
+  id          Int        @id @default(autoincrement())
+  name        String
+  contactName String?    @map("contact_name")
+  phone       String?
+  email       String?
+  country     String?    @default("Китай")
+  note        String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  purchases   Purchase[]
+  products    Product[]
+
+  @@map("suppliers")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?
+  brand       String?
+  categoryId  Int      @map("category_id")
+  supplierId  Int?     @map("supplier_id")
+  composition String? // состав ткани
+  specs       Json? // характеристики (ключ/значение)
+  sizes       String[] // доступные размеры, например ["S","M","L"]
+  colors      Json? // [{ name: "Чёрный", hex: "#111111" }]
+
+  /// Цена продажи (копейки). Видна покупателям.
+  priceCents Int @map("price_cents")
+
+  // ------- ФИНАНСОВЫЕ ПОЛЯ. ДОСТУПНЫ ТОЛЬКО АДМИНИСТРАТОРУ -------
+  /// Закупочная цена у поставщика, коп.
+  purchasePriceCents Int @default(0) @map("purchase_price_cents")
+  /// Доставка из Китая, коп.
+  deliveryCostCents  Int @default(0) @map("delivery_cost_cents")
+  /// Комиссия посредника, коп.
+  commissionCents    Int @default(0) @map("commission_cents")
+  /// Таможня и прочие расходы, коп.
+  customsCents       Int @default(0) @map("customs_cents")
+  /// Упаковка, коп.
+  packagingCents     Int @default(0) @map("packaging_cents")
+  /// Комиссия платёжной системы, коп.
+  paymentFeeCents    Int @default(0) @map("payment_fee_cents")
+  /// Расходы на рекламу (на единицу товара), коп.
+  advertisingCents   Int @default(0) @map("advertising_cents")
+  // ----------------------------------------------------------------
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  category  Category         @relation(fields: [categoryId], references: [id])
+  supplier  Supplier?        @relation(fields: [supplierId], references: [id])
+  images    ProductImage[]
+  variants  ProductVariant[]
+  reviews   Review[]
+  favorites Favorite[]
+  orderItem OrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  url       String
+  alt       String?
+  sortOrder Int      @default(0) @map("sort_order")
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+/// Конкретная комбинация «товар + размер + цвет» и её остаток.
+model ProductVariant {
+  id                 Int    @id @default(autoincrement())
+  productId          Int    @map("product_id")
+  size               String
+  color              String
+  sku                String @unique
+  stock              Int    @default(0)
+  /// Закупочная цена именно этой вариации (коп.). Только для админа.
+  purchasePriceCents Int?   @map("purchase_price_cents")
+
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
+  orderItem OrderItem[]
+
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+// ================================== КОРЗИНА ===============================
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  variantId Int      @map("variant_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, variantId])
+  @@map("cart_items")
+}
+
+// ================================== ЗАКАЗЫ ================================
+
+model Order {
+  id             Int            @id @default(autoincrement())
+  number         String         @unique
+  userId         Int            @map("user_id")
+  status         OrderStatus    @default(pending)
+  /// Имя получателя
+  customerName   String         @map("customer_name")
+  phone          String
+  city           String
+  address        String?
+  pickupPoint    String?        @map("pickup_point")
+  deliveryMethod DeliveryMethod @default(pickup)
+  comment        String?
+
+  itemsTotalCents   Int @map("items_total_cents")
+  deliveryCostCents Int @default(0) @map("delivery_cost_cents")
+  discountCents     Int @default(0) @map("discount_cents")
+  totalCents        Int @map("total_cents")
+  /// Себестоимость проданных товаров (коп.) — фиксируется в момент заказа. Только админ.
+  costCents         Int @default(0) @map("cost_cents")
+
+  promocodeId Int?       @map("promocode_id")
+  promocode   Promocode? @relation(fields: [promocodeId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int @id @default(autoincrement())
+  orderId   Int @map("order_id")
+  productId Int @map("product_id")
+  variantId Int @map("variant_id")
+
+  /// Снимок данных товара на момент покупки
+  productName    String  @map("product_name")
+  size           String
+  color          String
+  imageUrl       String? @map("image_url")
+  /// Цена продажи за единицу, коп.
+  unitPriceCents Int     @map("unit_price_cents")
+  /// Себестоимость за единицу, коп. (только админ)
+  unitCostCents  Int     @default(0) @map("unit_cost_cents")
+  quantity       Int
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ================================ ИЗБРАННОЕ ===============================
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+// ================================== ОТЗЫВЫ ================================
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  userId    Int      @map("user_id")
+  rating    Int
+  title     String?
+  body      String?
+  createdAt DateTime @default(now()) @updatedAt @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+// ================================ ПРОМОКОДЫ ===============================
+
+model Promocode {
+  id            Int          @id @default(autoincrement())
+  code          String       @unique
+  type          DiscountType @default(percent)
+  /// Для percent — проценты, для fixed — копейки
+  value         Int
+  minOrderCents Int          @default(0) @map("min_order_cents")
+  maxUses       Int?         @map("max_uses")
+  usedCount     Int          @default(0) @map("used_count")
+  expiresAt     DateTime?    @map("expires_at")
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  orders Order[]
+  usages PromoUsage[]
+
+  @@map("promocodes")
+}
+
+model PromoUsage {
+  id            Int      @id @default(autoincrement())
+  promocodeId   Int      @map("promocode_id")
+  userId        Int      @map("user_id")
+  discountCents Int      @map("discount_cents")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  promocode Promocode @relation(fields: [promocodeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([promocodeId])
+  @@map("promo_usages")
+}
+
+// ============================ ЗАКУПКИ У ПОСТАВЩИКОВ =======================
+
+model Purchase {
+  id              Int            @id @default(autoincrement())
+  number          String         @unique
+  supplierId      Int            @map("supplier_id")
+  status          PurchaseStatus @default(draft)
+  orderDate       DateTime       @default(now()) @updatedAt @map("order_date")
+  receivedAt      DateTime?      @map("received_at")
+  /// Сумма закупки, коп.
+  totalCents      Int            @default(0) @map("total_cents")
+  /// Доставка партии из Китая, коп.
+  deliveryCents   Int            @default(0) @map("delivery_cents")
+  /// Комиссия посредника, коп.
+  commissionCents Int            @default(0) @map("commission_cents")
+  /// Таможня, коп.
+  customsCents    Int            @default(0) @map("customs_cents")
+  note            String?
+
+  supplier Supplier       @relation(fields: [supplierId], references: [id])
+  items    PurchaseItem[]
+
+  @@index([supplierId])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id            Int    @id @default(autoincrement())
+  purchaseId    Int    @map("purchase_id")
+  productId     Int?   @map("product_id")
+  name          String
+  quantity      Int
+  /// Цена за единицу, коп.
+  unitCostCents Int    @map("unit_cost_cents")
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseId])
+  @@map("purchase_items")
+}
+
+// ================================== РАСХОДЫ ===============================
+
+model Expense {
+  id          Int             @id @default(autoincrement())
+  category    ExpenseCategory
+  amountCents Int             @map("amount_cents")
+  title       String
+  note        String?
+  date        DateTime        @default(now()) @updatedAt
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  @@index([category])
+  @@index([date])
+  @@map("expenses")
+}

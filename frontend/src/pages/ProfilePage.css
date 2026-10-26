@@ -1,0 +1,135 @@
+.profile-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.profile-head__avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex: none;
+}
+
+.profile-head__text h1 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+}
+
+.profile-head__text p {
+  margin: 4px 0 0;
+}
+
+.profile-head__actions {
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.profile-stats {
+  margin-bottom: 18px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.profile-grid form {
+  gap: 14px;
+}
+
+/* ------------------------------ Мои отзывы ------------------------------- */
+
+.my-reviews {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.my-reviews li {
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.my-reviews li p {
+  margin: 0;
+}
+
+.my-reviews__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.my-reviews__head a {
+  font-weight: 600;
+}
+
+.my-reviews__head a:hover {
+  color: var(--c-accent);
+}
+
+.my-reviews__remove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--c-line);
+  background: var(--c-white);
+  color: var(--c-muted);
+  cursor: pointer;
+  flex: none;
+  font-size: var(--fs-xs);
+  transition: all 0.15s ease;
+}
+
+.my-reviews__remove:hover {
+  color: var(--c-danger);
+  border-color: var(--c-danger);
+}
+
+.my-reviews__title {
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 940px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .profile-head__actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .profile-head__actions .btn {
+    flex: 1 1 auto;
+  }
+}

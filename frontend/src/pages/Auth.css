@@ -1,0 +1,229 @@
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding-top: 8px;
+}
+
+.auth__card {
+  padding: 28px;
+}
+
+.auth__card h1 {
+  margin: 0 0 6px;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+}
+
+.auth__card > .muted {
+  margin: 0 0 20px;
+  font-size: var(--fs-sm);
+}
+
+.auth__card form {
+  gap: 16px;
+}
+
+.password {
+  position: relative;
+}
+
+.password .input {
+  padding-right: 44px;
+}
+
+.password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+
+.password__toggle:hover {
+  color: var(--c-ink);
+  background: var(--c-grey);
+}
+
+/* ------------------------------ Демо-доступ ------------------------------ */
+
+.auth__side {
+  padding: 24px;
+}
+
+.auth__side h2 {
+  margin: 0 0 6px;
+  font-size: var(--fs-md);
+}
+
+.auth__side > .muted {
+  margin: 0 0 16px;
+}
+
+.auth__side .col {
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'role pass'
+    'email pass';
+  gap: 2px 12px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--c-white);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.demo:hover:not(:disabled) {
+  border-color: var(--c-ink);
+  transform: translateY(-1px);
+}
+
+.demo:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.demo__role {
+  grid-area: role;
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+
+.demo__email {
+  grid-area: email;
+  color: var(--c-muted);
+  font-size: var(--fs-xs);
+}
+
+.demo__pass {
+  grid-area: pass;
+  align-self: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--fs-xs);
+  background: var(--c-grey);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.demo--admin {
+  border-color: var(--c-accent);
+  background: var(--c-accent-soft);
+}
+
+.demo--admin .demo__pass {
+  background: #fff;
+}
+
+/* ------------------------------ Преимущества ----------------------------- */
+
+.perks {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.perks li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  font-size: var(--fs-sm);
+}
+
+.perks li span:first-child {
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth__card {
+    padding: 20px;
+  }
+}
+
+/* --------------------------- Сложность пароля ---------------------------- */
+
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.strength span:not(em) {
+  height: 4px;
+  width: 34px;
+  border-radius: 2px;
+  background: var(--c-line);
+  transition: background 0.2s ease;
+}
+
+.strength em {
+  margin-left: 8px;
+  font-size: var(--fs-xs);
+  font-style: normal;
+  color: var(--c-muted);
+}
+
+.strength[data-score='1'] span:nth-child(-n + 1),
+.strength[data-score='2'] span:nth-child(-n + 2) {
+  background: var(--c-danger);
+}
+
+.strength[data-score='3'] span:nth-child(-n + 3) {
+  background: var(--c-warn);
+}
+
+.strength[data-score='4'] span:nth-child(-n + 4),
+.strength[data-score='5'] span:nth-child(-n + 5) {
+  background: var(--c-ok);
+}
+
+/* -------------------------------- Чекбокс -------------------------------- */
+
+.checkbox--agree {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  font-size: var(--fs-sm);
+  color: var(--c-ink-2);
+  cursor: pointer;
+  white-space: normal;
+}
+
+.checkbox--agree input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--c-accent);
+}
+
+.checkbox--agree em {
+  display: block;
+  font-style: normal;
+  margin-top: 4px;
+}

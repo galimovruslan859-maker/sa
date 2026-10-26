@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="520" height="600" role="img" aria-label="Носки набор из 5 пар · Му…">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6f6f6"/>
+      <stop offset="100%" stop-color="#e8e8e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="260" height="300" fill="url(#bg)"/>
+  <g fill="#8e6bb5" fill-opacity="0.94" stroke="rgba(17,17,17,0.20)" stroke-width="2">
+    <path d="M98 46 L154 46 L154 162 L188 198 Q200 214 186 226 L152 250 Q136 258 124 244 L98 202 Z"/>
+  </g>
+  <text x="130" y="288" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10.5" letter-spacing="1.6" fill="#6b6b6b">GUANGZHOU BASIC · RESELL</text>
+</svg>

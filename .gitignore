@@ -1,0 +1,34 @@
+# --- зависимости ---
+node_modules/
+.pnp
+.pnp.js
+
+# --- сборки ---
+dist/
+build/
+*.tsbuildinfo
+
+# --- встроенная база данных (PGlite) ---
+backend/.pgdata/
+*.pgdata/
+
+# --- переменные окружения ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- логи и служебные файлы ---
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- тесты / покрытие ---
+coverage/
+.nyc_output/

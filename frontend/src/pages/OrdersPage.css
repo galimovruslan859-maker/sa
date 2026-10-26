@@ -1,0 +1,130 @@
+.orders-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.orders-list {
+  gap: 14px;
+}
+
+.order-card {
+  padding: 18px;
+}
+
+.order-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.order-card__number {
+  font-weight: 700;
+  font-size: var(--fs-md);
+  letter-spacing: 0.01em;
+}
+
+.order-card__number:hover {
+  color: var(--c-accent);
+}
+
+.order-card__head p {
+  margin: 3px 0 0;
+}
+
+.order-card__thumbs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.order-card__thumb {
+  position: relative;
+  width: 54px;
+  height: 66px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--c-grey);
+  border: 1px solid var(--c-line);
+  flex: none;
+}
+
+.order-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-card__thumb i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--c-grey);
+}
+
+.order-card__thumb em {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(17, 17, 17, 0.78);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 5px;
+}
+
+.order-card__more {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+}
+
+.order-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--c-line);
+  padding-top: 14px;
+}
+
+.order-card__total {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-card__total strong {
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.orders-sum {
+  margin-top: 16px;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .order-card {
+    padding: 14px;
+  }
+
+  .order-card__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .order-card__foot .row {
+    justify-content: space-between;
+  }
+
+  .orders-sum {
+    text-align: left;
+  }
+}

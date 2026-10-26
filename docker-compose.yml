@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# RESELL — развёртывание всего проекта одной командой:
+#   docker compose up --build
+#
+#   db       PostgreSQL 16        localhost:5432
+#   backend  Express API          http://localhost:4000/api
+#   frontend nginx + сборка React http://localhost:8080
+# ---------------------------------------------------------------------------
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: resell-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-resell}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resell}
+      POSTGRES_DB: ${POSTGRES_DB:-resell}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-resell} -d ${POSTGRES_DB:-resell}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: resell-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_ENGINE: pg
+      DATABASE_URL: postgresql://${POSTGRES_USER:-resell}:${POSTGRES_PASSWORD:-resell}@db:5432/${POSTGRES_DB:-resell}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-please-use-long-random-string}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      UPLOAD_DIR: /app/uploads
+      # При первом запуске база заполняется демо-данными:
+      # SEED_ON_START=true → migrate deploy + seed, иначе только migrate deploy
+      SEED_ON_START: ${SEED_ON_START:-true}
+    ports:
+      - '4000:4000'
+    volumes:
+      - uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    container_name: resell-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '8080:80'
+
+volumes:
+  pgdata:
+  uploads:
