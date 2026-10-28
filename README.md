@@ -93,6 +93,9 @@ npm run dev                         # сайт на http://localhost:5173
 
 Откройте <http://localhost:5173>.
 
+> **Как разместить в интернете** (VPS + Docker, Vercel + Render + Neon, архив руками на свой
+> сервер) — пошаговые инструкции в [DEPLOY.md](DEPLOY.md).
+
 ### Вариант Б — настоящий PostgreSQL через Docker
 
 ```bash
