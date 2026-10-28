@@ -110,10 +110,15 @@ Caddy сам выпустит Let's Encrypt-сертификат. В `.env` back
 
 ### Где взять файлы
 
-- **GitHub → Releases**: https://github.com/galimovruslan859-maker/sa/releases —
-  архив `resell-v1.0.0.zip` (проект **включая готовую сборку `frontend/dist`**).
-- Или **Code → Download ZIP** (без `dist`: сборку придётся сделать самому).
-- Или `git clone` + `git checkout arena/d698d2b7-sa`.
+- **Готовый архив со сборкой** лежит прямо в репозитории:
+  [`release/resell-v1.0.0.zip`](https://github.com/galimovruslan859-maker/sa/blob/arena/d698d2b7-sa/release/resell-v1.0.0.zip) —
+  откройте файл на GitHub и нажмите **Download** (или
+  [прямая ссылка](https://github.com/galimovruslan859-maker/sa/raw/arena/d698d2b7-sa/release/resell-v1.0.0.zip)).
+  Внутри весь проект **включая готовую сборку `frontend/dist`** — её не нужно собирать заново.
+- Релиз с описанием версии: https://github.com/galimovruslan859-maker/sa/releases/tag/v1.0.0
+- Исходники без сборки: **Code → Download ZIP** или
+  [прямая ссылка](https://codeload.github.com/galimovruslan859-maker/sa/zip/refs/heads/arena/d698d2b7-sa).
+- Или `git clone https://github.com/galimovruslan859-maker/sa.git` + `git checkout arena/d698d2b7-sa`.
 
 ### 3а. Сервер с Node.js, но без Docker
 
