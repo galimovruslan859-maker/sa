@@ -108,6 +108,25 @@ npm run dev
 
 Либо всё сразу: `docker compose up --build` (поднимет БД, API и фронтенд).
 
+### Вариант В — сайт и API одним процессом (один порт)
+
+Backend умеет сам раздавать production-сборку фронтенда, поэтому всё приложение
+открывается на порту API — удобно для демонстрации и деплоя без nginx:
+
+```bash
+cd frontend && npm install && npm run build      # соберёт frontend/dist
+cd ../backend
+npm install --legacy-peer-deps
+cp .env.example .env
+npm run db:setup
+npm start                                        # http://localhost:4000 — и сайт, и API
+```
+
+Как это работает: `GET /` и любые маршруты вроде `/catalog`, `/admin` отдают `dist/index.html`
+(дальше навигацию ведёт React Router), `/assets/*` — статику сборки с долгим кэшем,
+а `/api/*` и `/uploads/*` обрабатываются как обычно. Путь к сборке задаётся переменной
+`FRONTEND_DIST` (по умолчанию `../frontend/dist`); если сборки нет, backend остаётся чистым API.
+
 ### Полезные команды
 
 | Команда | Каталог | Что делает |
@@ -337,6 +356,7 @@ npm run smoke              # в другом
 | `JWT_EXPIRES_IN` | `7d` | срок жизни токена |
 | `CORS_ORIGIN` | `http://localhost:5173` | разрешённые источники (через запятую, `*` — все) |
 | `UPLOAD_DIR` | `./uploads` | каталог загруженных фотографий |
+| `FRONTEND_DIST` | `../frontend/dist` | сборка фронтенда: если есть, backend раздаёт сайт на своём порту |
 | `DEBUG_SQL` | `false` | логировать SQL-запросы |
 
 ---

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import fs from 'node:fs';
 import path from 'node:path';
 
 import { env } from './config/env';
@@ -82,6 +83,35 @@ export function createApp(): Express {
   app.use('/api/admin', adminRoutes);
 
   app.use('/api', notFoundHandler);
+
+  // --- Раздача собранного фронтенда (SPA) ------------------------------------
+  // Если production-сборка существует, магазин и API работают на одном порту:
+  //   GET /            -> dist/index.html
+  //   GET /catalog     -> dist/index.html (маршруты обрабатывает React Router)
+  //   GET /assets/*    -> статика сборки
+  //   /api/* и /uploads/* обработаны выше и сюда не попадают.
+  // В Docker-развёртывании статику отдаёт nginx, поэтому папки dist здесь нет —
+  // блок просто не подключается.
+  const indexHtml = path.join(env.frontendDist, 'index.html');
+  if (fs.existsSync(indexHtml)) {
+    app.use(
+      express.static(env.frontendDist, {
+        index: false,
+        maxAge: '1h',
+        setHeaders: (res, filePath) => {
+          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            // файлы сборки содержат хэш в имени — кэшируем надолго
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        },
+      }),
+    );
+
+    app.get(/^\/(?!api|uploads).*/, (_req, res) => {
+      res.sendFile(indexHtml);
+    });
+  }
+
   app.use(errorHandler);
 
   return app;

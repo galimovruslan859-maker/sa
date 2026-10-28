@@ -16,6 +16,8 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   UPLOAD_DIR: z.string().default('./uploads'),
+  /** Каталог production-сборки фронтенда — раздаётся тем же сервером (SPA на одном порту с API) */
+  FRONTEND_DIST: z.string().default('../frontend/dist'),
   DEBUG_SQL: z
     .string()
     .default('false')
@@ -43,6 +45,10 @@ export const env = {
   uploadDir: path.isAbsolute(raw.UPLOAD_DIR)
     ? raw.UPLOAD_DIR
     : path.resolve(ROOT_DIR, raw.UPLOAD_DIR),
+  /** Абсолютный путь к сборке фронтенда (если её нет — API работает без статики) */
+  frontendDist: path.isAbsolute(raw.FRONTEND_DIST)
+    ? raw.FRONTEND_DIST
+    : path.resolve(ROOT_DIR, raw.FRONTEND_DIST),
   corsOrigins: raw.CORS_ORIGIN.split(',')
     .map((s) => s.trim())
     .filter(Boolean),
